@@ -40,7 +40,7 @@ class Lesson(models.Model):
     description = models.TextField()
     lesson_index = models.PositiveSmallIntegerField()
     content = models.TextField()
-    audio = models.FileField("Uploaded Audio", upload_to=scramble_uploaded_filename)
+    audio = models.FileField("Uploaded Audio", upload_to=scramble_uploaded_filename, default=None)
     video_url = models.CharField(max_length=1000, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

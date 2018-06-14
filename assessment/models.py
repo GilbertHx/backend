@@ -21,8 +21,9 @@ class Assessment(models.Model):
 class Question(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name="assessment_question")
-    label = models.CharField(max_length=255, blank=True, default='')
+    label = models.TextField()
     marks = models.PositiveSmallIntegerField(default=0)
+    is_essay = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,14 +31,15 @@ class EssayResponse(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     current_user = models.ForeignKey(User, related_name="essay_user", on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="question_essay_response")
-    essay = models.FileField("Uploaded Essays", upload_to=scramble_uploaded_filename)
+    title = models.CharField(max_length=255, blank=True, default='')
+    essay = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 class Response(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="question_response")
-    label = models.CharField(max_length=255, blank=True, default='')
+    label = models.TextField()
     correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

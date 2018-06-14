@@ -7,7 +7,7 @@ from course.models import Lesson
 class Quiz(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     lesson = models.ForeignKey(Lesson, related_name="lesson_quiz", on_delete=models.CASCADE)
-    label = models.CharField(max_length=255, blank=True, default='')
+    label = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -17,7 +17,7 @@ class Quiz(models.Model):
 class Answer(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, related_name="quiz_answer", on_delete=models.CASCADE)
-    label = models.CharField(max_length=255, blank=True, default='')
+    label = models.TextField()
     correct = models.BooleanField(blank=False, default=False, help_text=("Is this a correct answer?"))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

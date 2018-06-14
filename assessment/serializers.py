@@ -10,7 +10,7 @@ class AssessmentSerializer(ModelSerializer):
         done = QuestionStatus.objects.values()
         questions = obj.assessment_question.values()
         for q in questions:
-            q['done'] = done.filter(question_id=q['id'])
+            q['done'] = done.filter(question_id=q['id'], current_user_id=self.context['request'].user.id)
             q['responses'] = responses.filter(question_id=q['id'])
             l.append(q)
         return l
@@ -45,6 +45,7 @@ class QuestionSerializer(ModelSerializer):
             'uuid',
             'assessment',
             'label',
+            'is_essay',
             'marks',
             'done',
             'responses',
@@ -62,13 +63,20 @@ class ResponseSerializer(ModelSerializer):
         ]
 
 class EssayResponseSerializer(ModelSerializer):
+
+    reviews = serializers.SerializerMethodField()
+    def get_reviews(self, obj):
+        return EssayRating.objects.values()
+
     class Meta:
         model = EssayResponse
         fields = [
             'id',
             'uuid',
+            'title',
             'question',
             'essay',
+            'reviews',
         ]
 
 class EssayRatingSerializer(ModelSerializer):
@@ -77,10 +85,9 @@ class EssayRatingSerializer(ModelSerializer):
         fields = [
             'id',
             'uuid',
-            'comment',
-            'current_user',
             'essay',
             'rating',
+            'comment'
         ]
 
 class QuestionStatusSerializer(ModelSerializer):

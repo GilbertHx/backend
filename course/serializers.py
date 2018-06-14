@@ -44,11 +44,13 @@ class SessionSerializer(ModelSerializer):
             lesson_dict['id'] = lesson.id
             lesson_dict['uuid'] = lesson.uuid
             lesson_dict['title'] = lesson.title
+            # lesson_dict['session'] = dict(id=lesson.session.id, title=lesson.session.title)
             lesson_dict['session'] = lesson.session_id
             lesson_dict['description'] = lesson.description
             lesson_dict['lesson_index'] = lesson.lesson_index
             lesson_dict['content'] = lesson.content
-            lesson_dict['audio'] = settings.DOMAIN_NAME + lesson.audio.url
+            if lesson.audio:
+                lesson_dict['audio'] = settings.DOMAIN_NAME + lesson.audio.url
             lesson_dict['video_url'] = lesson.video_url
             output.append(lesson_dict)
         return output
@@ -75,6 +77,7 @@ class LessonSerializer(ModelSerializer):
             q['answers'] = answers.filter(quiz_id=q['id'])
             l.append(q)
         return l
+
     class Meta:
         model = Lesson
         fields = [
@@ -86,7 +89,7 @@ class LessonSerializer(ModelSerializer):
             'content',
             'audio',
             'video_url',
-            'quizzes'
+            'quizzes',
         ]
 
 class LessonCompletionSerializer(ModelSerializer):

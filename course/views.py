@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .serializers import UnitSerializer, SessionSerializer, LessonSerializer, LessonCompletedSerializer, LessonCompletionSerializer
 from .models import Unit, Session, Lesson, LessonComplete
+from accounts.models import Stage
 from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -11,6 +12,10 @@ class UnitListAPIView(generics.ListAPIView):
     serializer_class = UnitSerializer
 
 class UnitRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = Unit.objects.all()
+    serializer_class = UnitSerializer
+
+class UnitUpdateAPIView(generics.UpdateAPIView):
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
 
@@ -38,6 +43,10 @@ class SessionCreateAPIView(generics.CreateAPIView):
     serializer_class = SessionSerializer
     permission_classes = (IsAdminUser,)
 
+class SessionUpdateAPIView(generics.UpdateAPIView):
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+
 class SessionDestroyAPIView(generics.DestroyAPIView):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
@@ -57,6 +66,10 @@ class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = (IsAdminUser,)
 
+class LessonUpdateAPIView(generics.UpdateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
@@ -75,10 +88,12 @@ class LessonCompletedCreateAPIView(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
-        if LessonComplete.objects.filter(current_user_id=self.request.user, lesson_id=serializer.data['lesson']).exists():
-            LessonComplete.objects.filter(current_user_id=self.request.user, lesson_id=serializer.data['lesson']).update(completed=serializer.data['completed'])
+        if LessonComplete.objects.filter(current_user=self.request.user, lesson_id=serializer.data['lesson']).exists():
+            LessonComplete.objects.filter(current_user=self.request.user, lesson_id=serializer.data['lesson']).update(completed=serializer.data['completed'])
         else:
-            LessonComplete.objects.create(current_user_id=self.request.user.id, lesson_id=serializer.data['lesson'],completed=serializer.data['completed'])
+            if Stage.objects.filter(current_user=self.request.user, user_stage=Stage.NOT_STUDENT).exists():
+                Stage.objects.filter(current_user=self.request.user, user_stage=Stage.NOT_STUDENT).update(user_stage=Stage.IN_CLASS)
+            LessonComplete.objects.create(current_user=self.request.user, lesson_id=serializer.data['lesson'],completed=serializer.data['completed'])
 
     def get_queryset(self):
         user = self.request.user

@@ -5,6 +5,7 @@ urlpatterns = [
     url(r'^$', views.ExamListAPIView.as_view(), name='list_exams'),
     url(r'^published/$', views.ExamListUserAPIView.as_view(), name='list_published_exams'),
     url(r'^create/$', views.ExamCreateAPIView.as_view(), name='create_exam'),
+    url(r'^admin/detail/(?P<pk>[0-9a-f-]+)/$', views.ExamAdminRetrieveAPIView.as_view(), name='admin_detail_exam'),
     url(r'^detail/(?P<pk>[0-9a-f-]+)/$', views.ExamRetrieveAPIView.as_view(), name='detail_exam'),
     url(r'^(?P<pk>[0-9a-f-]+)/update/$', views.ExamUpdateAPIView.as_view(), name='update_exam'),
     url(r'^(?P<pk>[0-9a-f-]+)/delete/$', views.ExamDestroyAPIView.as_view(), name='delete_exam'),

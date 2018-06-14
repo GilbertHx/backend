@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .serializers import ExamSerializer, PublishingExamSerializer, QuestionSerializer, ResponseSerializer, QuestionStatusSerializer, ExamMarksSerializer, ExamMarksAdminSerializer
 from .models import  Exam, Question, Response, QuestionStatus, ExamMarks
+from accounts.models import Stage
 from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -16,9 +17,17 @@ class ExamListUserAPIView(generics.ListAPIView):
     def get_queryset(self):
         return Exam.objects.filter(published=True)
 
-class ExamRetrieveAPIView(generics.RetrieveAPIView):
+class ExamAdminRetrieveAPIView(generics.RetrieveAPIView):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
+    permission_classes = (IsAdminUser,)
+
+class ExamRetrieveAPIView(generics.RetrieveAPIView):
+    # queryset = Exam.objects.all()
+    serializer_class = ExamSerializer
+
+    def get_queryset(self):
+        return Exam.objects.filter(published=True)
 
 class ExamCreateAPIView(generics.CreateAPIView):
     queryset = Exam.objects.all()
@@ -28,6 +37,14 @@ class ExamCreateAPIView(generics.CreateAPIView):
 class ExamUpdateAPIView(generics.UpdateAPIView):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
+
+    def perform_update(self, serializer):
+        exams = Exam.objects.all()
+
+        for exam in exams:
+            Exam.objects.filter(id=exam.id).update(published=False)
+
+        serializer.save()
 
 class ExamDestroyAPIView(generics.DestroyAPIView):
     queryset = Exam.objects.all()
@@ -89,7 +106,10 @@ class QuestionStatusCreateAPIView(generics.CreateAPIView):
         if QuestionStatus.objects.filter(current_user_id=self.request.user, question_id=serializer.data['question']).exists():
             QuestionStatus.objects.filter(current_user_id=self.request.user, question_id=serializer.data['question']).update(done=serializer.data['done'], completed=serializer.data['completed'])
         else:
-            QuestionStatus.objects.create(current_user_id=self.request.user.id, question_id=serializer.data['question'])
+            if serializer.data['done'] or serializer.data['completed']:
+                QuestionStatus.objects.create(current_user_id=self.request.user.id, question_id=serializer.data['question'], done=serializer.data['done'], completed=serializer.data['completed'])
+            else:
+                QuestionStatus.objects.create(current_user_id=self.request.user.id, question_id=serializer.data['question'])
 
 class QuestionStatusDestroyAPIView(generics.DestroyAPIView):
     queryset = QuestionStatus.objects.all()
@@ -121,6 +141,8 @@ class ExamMarksCreateAPIView(generics.CreateAPIView):
             for q in all_completed_questions:
                 if q.question.exam.id == serializer.data['exam']:
                     marks = marks + q.question.marks
+            if Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).exists():
+                Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).update(user_stage=Stage.UNGRADUATED)
             ExamMarks.objects.filter(current_user_id=self.request.user, exam_id=serializer.data['exam']).update(marks=marks)
         else:
             all_completed_questions = QuestionStatus.objects.filter(completed=True, current_user=self.request.user)
@@ -128,6 +150,8 @@ class ExamMarksCreateAPIView(generics.CreateAPIView):
             for q in all_completed_questions:
                 if q.question.exam.id == serializer.data['exam']:
                     marks = q.question.marks
+            if Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).exists():
+                Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).update(user_stage=Stage.UNGRADUATED)
             ExamMarks.objects.create(current_user_id=self.request.user.id, exam_id=serializer.data['exam'],marks=marks)
 
     def get_queryset(self):
