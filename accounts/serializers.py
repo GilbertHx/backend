@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Stage, Certificate, Profile
+from .models import Stage, Certificate, Profile, UserComment
 from django.conf import settings
 
 class ProfileSerializer(ModelSerializer):
@@ -20,6 +20,16 @@ class ProfileSerializer(ModelSerializer):
             'qualification',
         ]
 
+class UserCommentSerializer(ModelSerializer):
+    class Meta:
+        model = UserComment
+        fields = [
+            'id',
+            'current_user',
+            'comment',
+            'created_at',
+        ]
+
 class UserSerializer(ModelSerializer):
     
     stage = serializers.SerializerMethodField()
@@ -28,13 +38,37 @@ class UserSerializer(ModelSerializer):
     
     profile = ProfileSerializer(read_only=True)
     
+    comments = serializers.SerializerMethodField()
+    def get_comments(self, obj):
+        return obj.user_commeted.values()
+
     assessment_marks = serializers.SerializerMethodField()
     def get_assessment_marks(self, obj):
-        return obj.user_marks.values()
+        output = []
+        assessment_marks = obj.user_marks.all()
+        for mark in assessment_marks:
+            marks_dict = dict()
+            marks_dict['id'] = mark.id
+            marks_dict['uuid'] = mark.uuid
+            marks_dict['assessment'] = mark.assessment_id
+            marks_dict['assessment_title'] = mark.assessment.label
+            marks_dict['marks'] = mark.marks
+            output.append(marks_dict)
+        return output
     
     exam_marks = serializers.SerializerMethodField()
     def get_exam_marks(self, obj):
-        return obj.user_exam_marks.values()
+        output = []
+        exam_marks = obj.user_exam_marks.all()
+        for mark in exam_marks:
+            marks_dict = dict()
+            marks_dict['id'] = mark.id
+            marks_dict['uuid'] = mark.uuid
+            marks_dict['exam'] = mark.exam_id
+            marks_dict['exam_title'] = mark.exam.title
+            marks_dict['marks'] = mark.marks
+            output.append(marks_dict)
+        return output
     
     certificate = serializers.SerializerMethodField()
     def get_certificate(self, obj):
@@ -67,6 +101,7 @@ class UserSerializer(ModelSerializer):
             'is_superuser',
             'certificate',
             'profile',
+            'comments',
             'stage',
             'assessment_marks',
             'exam_marks',

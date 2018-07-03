@@ -76,3 +76,9 @@ class Certificate(models.Model):
     current_user = models.ForeignKey(User, related_name="graduate_user", on_delete=models.CASCADE)
     user_certificate = models.FileField("Certificates", upload_to=scramble_uploaded_filename)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class UserComment(models.Model):
+    current_user = models.ForeignKey(User, related_name="user_commeted", on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

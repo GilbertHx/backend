@@ -1,8 +1,25 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import Unit, Session, Lesson, LessonComplete
+from .models import Unit, Session, Lesson, LessonComplete, UnitAssessmentCompleted
 from quiz.models import Answer
+from assessment.models import AssessmentMarks
 from django.conf import settings
+
+class UnitAssessmentCompletedSerializer(ModelSerializer):
+    class Meta:
+        model = UnitAssessmentCompleted
+        fields = [
+            'unit',
+            'current_user',
+            'completed',
+            'show_unit',
+        ]
+
+class UnitAssessmentCompletedCreateSerializer(ModelSerializer):
+    class Meta:
+        model = UnitAssessmentCompleted
+        fields = [
+        ] 
 
 class UnitSerializer(ModelSerializer):
     sessions = serializers.SerializerMethodField()
@@ -22,8 +39,19 @@ class UnitSerializer(ModelSerializer):
 
     assessments = serializers.SerializerMethodField()
     def get_assessments(self, obj):
-        return obj.unit_assessment.values()
+        l = []
+        marks = AssessmentMarks.objects.values()
+        assessments = obj.unit_assessment.values()
+        
+        for a in assessments:
+            a['marks'] = marks.filter(assessment_id=a['id'])
+            l.append(a)
+        return l
 
+    unit_completed = serializers.SerializerMethodField()
+    def get_unit_completed(self, obj):
+        return obj.unit_to_complete.values().filter(current_user=self.context['request'].user);
+    
     class Meta:
         model = Unit
         fields = [
@@ -32,7 +60,10 @@ class UnitSerializer(ModelSerializer):
             'description',
             'sessions',
             'assessments',
+            'unit_completed',
         ]
+
+
 
 class SessionSerializer(ModelSerializer):
     lessons = serializers.SerializerMethodField()
@@ -78,6 +109,11 @@ class LessonSerializer(ModelSerializer):
             l.append(q)
         return l
 
+    session_title = serializers.SerializerMethodField()
+
+    def get_session_title(self, obj):
+        return obj.session.title
+
     class Meta:
         model = Lesson
         fields = [
@@ -90,6 +126,7 @@ class LessonSerializer(ModelSerializer):
             'audio',
             'video_url',
             'quizzes',
+            'session_title',
         ]
 
 class LessonCompletionSerializer(ModelSerializer):

@@ -19,6 +19,14 @@ class Unit(models.Model):
     def __str__(self):
         return self.title
 
+class UnitAssessmentCompleted(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="unit_to_complete")
+    current_user = models.ForeignKey(User, related_name="current_user_who_complete", on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)
+    show_unit = models.BooleanField(default=True)
+    
+
 class Session(models.Model):
     """Entire single session"""
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)

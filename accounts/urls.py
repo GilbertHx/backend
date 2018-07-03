@@ -26,6 +26,11 @@ urlpatterns = [
     url(r'^certificate/generate/$', views.CertificateCreateAPIView.as_view(), name='create_certificate'),
     url(r'^certificate/delete/(?P<pk>[0-9a-f-]+)/$', views.CertificateDestroyAPIView.as_view(), name='delete_certificate'),
 
+     url(r'comment/users/$', views.UserCommentListAPIView.as_view(), name='list_essays'),
+    url(r'^comment/user/create/$', views.UserCommentCreateAPIView.as_view(), name='create_essay_response'),
+    url(r'^comment/user/(?P<pk>[0-9a-f-]+)/delete/$', views.UserCommentDestroyAPIView.as_view(), name='delete_essay_response'),
+    url(r'^comment/user/detail/(?P<pk>[0-9a-f-]+)/$', views.UserCommentRetrieveAPIView.as_view(), name='detail_essay_response'),
+
     # This url is used by django-allauth and empty TemplateView is
     # defined just to allow reverse() call inside app, for example when email
     # with verification link is being sent, then it's required to render email

@@ -137,22 +137,34 @@ class ExamMarksCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         if ExamMarks.objects.filter(current_user_id=self.request.user, exam_id=serializer.data['exam']).exists():
             all_completed_questions = QuestionStatus.objects.filter(completed=True, current_user=self.request.user)
+            all_question = QuestionStatus.objects.filter(current_user=self.request.user)
             marks = 0
+            totalMarks = 0
             for q in all_completed_questions:
                 if q.question.exam.id == serializer.data['exam']:
                     marks = marks + q.question.marks
+            for q in all_question:
+                if q.question.exam.id == serializer.data['exam']:
+                    totalMarks = totalMarks + q.question.marks
+            percentage_marks = 100 * (marks / totalMarks)
             if Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).exists():
                 Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).update(user_stage=Stage.UNGRADUATED)
-            ExamMarks.objects.filter(current_user_id=self.request.user, exam_id=serializer.data['exam']).update(marks=marks)
+            ExamMarks.objects.filter(current_user_id=self.request.user, exam_id=serializer.data['exam']).update(marks=percentage_marks)
         else:
             all_completed_questions = QuestionStatus.objects.filter(completed=True, current_user=self.request.user)
+            all_question = QuestionStatus.objects.filter(current_user=self.request.user)
             marks = 0
+            totalMarks = 0
             for q in all_completed_questions:
                 if q.question.exam.id == serializer.data['exam']:
-                    marks = q.question.marks
+                    marks = marks + q.question.marks
+            for q in all_question:
+                if q.question.exam.id == serializer.data['exam']:
+                    totalMarks = totalMarks + q.question.marks
+            percentage_marks = 100 * (marks / totalMarks)
             if Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).exists():
                 Stage.objects.filter(current_user=self.request.user, user_stage=Stage.IN_CLASS).update(user_stage=Stage.UNGRADUATED)
-            ExamMarks.objects.create(current_user_id=self.request.user.id, exam_id=serializer.data['exam'],marks=marks)
+            ExamMarks.objects.create(current_user_id=self.request.user.id, exam_id=serializer.data['exam'],marks=percentage_marks)
 
     def get_queryset(self):
         user = self.request.user

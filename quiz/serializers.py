@@ -7,6 +7,10 @@ class QuizSerializer(ModelSerializer):
     answers = serializers.SerializerMethodField()
     def get_answers(self, obj):
         return obj.quiz_answer.values()
+    
+    lesson_title = serializers.SerializerMethodField()
+    def get_lesson_title(self, obj):
+        return obj.lesson.title
 
     class Meta:
         model = Quiz
@@ -15,6 +19,7 @@ class QuizSerializer(ModelSerializer):
             'lesson',
             'label',
             'answers',
+            'lesson_title',
         ]
 
 class QuizCompleteSerializer(ModelSerializer):

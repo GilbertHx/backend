@@ -2,10 +2,10 @@ from django.shortcuts import render
 from rest_auth.registration.views import RegisterView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Stage, Certificate, Profile
+from .models import Stage, Certificate, Profile, UserComment
 from rest_framework import generics, views
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, StageSerializer, CertificateSerializer, CertificateCreateSerializer, ProfileSerializer, AdminStageSerializer
+from .serializers import UserSerializer, StageSerializer, CertificateSerializer, CertificateCreateSerializer, ProfileSerializer, AdminStageSerializer, UserCommentSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from django.http import HttpResponse
@@ -186,3 +186,21 @@ class GeneratePDF(View):
             response['Content-Disposition'] = content
             return response
         return HttpResponse("Not found")
+
+class UserCommentListAPIView(generics.ListAPIView):
+    queryset = UserComment.objects.all()
+    serializer_class = UserCommentSerializer
+
+class UserCommentRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = UserComment.objects.all()
+    serializer_class = UserCommentSerializer
+
+class UserCommentCreateAPIView(generics.CreateAPIView):
+    queryset = UserComment.objects.all()
+    serializer_class = UserCommentSerializer
+    permission_classes = (IsAdminUser,)
+
+class UserCommentDestroyAPIView(generics.DestroyAPIView):
+    queryset = UserComment.objects.all()
+    serializer_class = UserCommentSerializer
+    permission_classes = (IsAdminUser,)

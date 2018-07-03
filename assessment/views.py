@@ -197,18 +197,32 @@ class AssessmentMarksCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         if AssessmentMarks.objects.filter(current_user_id=self.request.user, assessment_id=serializer.data['assessment']).exists():
             all_completed_questions = QuestionStatus.objects.filter(completed=True, current_user=self.request.user)
+            all_question = QuestionStatus.objects.filter(current_user=self.request.user)
             marks = 0
+            totalMarks = 0
             for q in all_completed_questions:
                 if q.question.assessment.id == serializer.data['assessment']:
                     marks = marks + q.question.marks
-            AssessmentMarks.objects.filter(current_user_id=self.request.user, assessment_id=serializer.data['assessment']).update(marks=marks)
+
+            for q in all_question:
+                if q.question.assessment.id == serializer.data['assessment']:
+                    totalMarks = totalMarks + q.question.marks
+            percentage_marks = 100 * (marks / totalMarks)
+            AssessmentMarks.objects.filter(current_user_id=self.request.user, assessment_id=serializer.data['assessment']).update(marks=percentage_marks)
         else:
             all_completed_questions = QuestionStatus.objects.filter(completed=True, current_user=self.request.user)
+            all_question = QuestionStatus.objects.filter(current_user=self.request.user)
             marks = 0
+            totalMarks = 0
             for q in all_completed_questions:
                 if q.question.assessment.id == serializer.data['assessment']:
-                    marks = q.question.marks
-            AssessmentMarks.objects.create(current_user_id=self.request.user.id, assessment_id=serializer.data['assessment'],marks=marks)
+                    marks = marks + q.question.marks
+
+            for q in all_question:
+                if q.question.assessment.id == serializer.data['assessment']:
+                    totalMarks = totalMarks + q.question.marks
+            percentage_marks = 100 * (marks / totalMarks)
+            AssessmentMarks.objects.create(current_user_id=self.request.user.id, assessment_id=serializer.data['assessment'],marks=percentage_marks)
 
     def get_queryset(self):
         user = self.request.user
