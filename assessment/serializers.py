@@ -8,7 +8,7 @@ class AssessmentSerializer(ModelSerializer):
         l = []
         responses = Response.objects.values()
         done = QuestionStatus.objects.values()
-        questions = obj.assessment_question.values()
+        questions = obj.assessment_question.values().order_by('?')
         for q in questions:
             q['done'] = done.filter(question_id=q['id'], current_user_id=self.context['request'].user.id)
             q['responses'] = responses.filter(question_id=q['id'])
