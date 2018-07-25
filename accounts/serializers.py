@@ -140,4 +140,9 @@ class CertificateCreateSerializer(ModelSerializer):
         model = Certificate
         fields = [
             'current_user',
+            'user_certificate',
+        ]
+
+        read_only_fields= [
+            'user_certificate'
         ]

@@ -16,10 +16,78 @@ from django.template.loader import get_template
 from django.core.files import File
 # from django.core.files.temp import NamedTemporaryFile
 from django.core.files.base import ContentFile
-from django.template.loader import get_template
 from xhtml2pdf import pisa
 from datetime import datetime
 from django.conf import settings
+from easy_pdf.views import PDFTemplateView, PDFTemplateResponseMixin
+import easy_pdf
+
+from django.views.generic.base import TemplateView
+
+class HelloPDFView(PDFTemplateView):
+    template_name = "certificate.html"
+
+    def get_context_data(self, **kwargs):
+        return super(HelloPDFView, self).get_context_data(
+            pagesize='A4 landscape',
+            title='Hi there!',
+            **kwargs
+        )
+
+class HomePageView(PDFTemplateResponseMixin, generics.ListCreateAPIView):
+    serializer_class = CertificateCreateSerializer
+    permission_classes = (IsAuthenticated,)
+    template_name = "certificate.html"
+    queryset = Certificate.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if Certificate.objects.filter(current_user=serializer.data['current_user']).exists():
+            certificate = Certificate.objects.filter(current_user=serializer.data['current_user']).first()
+            certificate_url = settings.DOMAIN_NAME + certificate.user_certificate.url
+            session_dict = dict()
+            session_dict['user_certificate'] = certificate_url
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(session_dict, status=status.HTTP_200_OK, headers=headers)
+
+        else:
+            user_ = Profile.objects.filter(id=serializer.data['current_user']).first();
+            template = get_template('certificate.html')
+            context = {
+                "user_first_name": user_.first_name,
+                "user_last_name": user_.last_name,
+            }
+            
+            # file_tmp = ContentFile(b"")
+            # html  = template.render(context)
+            pdf_cert = easy_pdf.rendering.render_to_pdf('certificate.html', context)
+
+            import pdb;
+            pdb.set_trace();
+            certificate = Certificate(current_user=user_)
+            certificate.save()
+            certificate.user_certificate.save("certificate_%s.pdf" %certificate.id, ContentFile(pdf_cert))
+            certificate.save()
+
+            certificate_url = settings.DOMAIN_NAME + certificate.user_certificate.url
+            session_dict = dict()
+            session_dict['user_certificate'] = certificate_url
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(session_dict, status=status.HTTP_201_CREATED, headers=headers)
+
+    # base_url = 'file://' + settings.STATIC_URL
+    # download_filename = 'invoice.pdf'
+
+    def get_context_data(self, **kwargs):
+        return super(HomePageView, self).get_context_data(
+            pagesize='A4 landscape',
+            title='Hi there!',
+            **kwargs
+        )
 
 # User
 class UserListAPIView(generics.ListAPIView):
@@ -88,7 +156,6 @@ class ListSummary(views.APIView):
         summary_dict['still_learning_number'] = Stage.objects.filter(user_stage=Stage.IN_CLASS).count()
         return Response(summary_dict)
 
-
 class CurrentUserView(views.APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -118,10 +185,11 @@ class CertificateListAPIView(generics.ListAPIView):
 class CertificateCreateAPIView(generics.CreateAPIView):
     serializer_class = CertificateCreateSerializer
     permission_classes = (IsAuthenticated,)
+    template_name = "certificate.html"
 
     def get_queryset(self):
         user = self.request.user
-        return Certificate.objects.filter(current_user=user)
+        return EssayResponse.objects.filter(current_user=user)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -137,21 +205,22 @@ class CertificateCreateAPIView(generics.CreateAPIView):
             return Response(session_dict, status=status.HTTP_200_OK, headers=headers)
 
         else:
+            profile_ = Profile.objects.filter(id=serializer.data['current_user']).first();
             user_ = User.objects.filter(id=serializer.data['current_user']).first();
-            template = get_template('invoice.html')
+            template = get_template('certificate.html')
             context = {
-                "invoice_id": 123,
-                "customer_name": user_.username,
-                "today": datetime.now(),
+                "user_first_name": profile_.first_name,
+                "user_last_name": profile_.last_name,
+                "reg_number": user_.username,
             }
-
-            file_tmp = ContentFile(b"")
-            html  = template.render(context)
-            pisaStatus = pisa.CreatePDF(html, dest=file_tmp)
+            
+            # file_tmp = ContentFile(b"")
+            # html  = template.render(context)
+            pdf_cert = easy_pdf.rendering.render_to_pdf('certificate.html', context)
 
             certificate = Certificate(current_user=user_)
             certificate.save()
-            certificate.user_certificate.save("certificate_%s.pdf" %certificate.id, File(file_tmp))
+            certificate.user_certificate.save("certificate_%s.pdf" %certificate.id, ContentFile(pdf_cert))
             certificate.save()
 
             certificate_url = settings.DOMAIN_NAME + certificate.user_certificate.url
@@ -168,14 +237,14 @@ class CertificateDestroyAPIView(generics.DestroyAPIView):
 
 class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
-        template = get_template('invoice.html')
+        template = get_template('certificate.html')
         context = {
             "invoice_id": 123,
             "customer_name": "John Cooper",
             "today": "Today",
         }
         html = template.render(context)
-        pdf = render_to_pdf('invoice.html', context)
+        pdf = make_pdf('certificate.html', context)
         if pdf:
             response = HttpResponse(pdf, content_type='application/pdf')
             filename = "Invoice_%s.pdf" %("12341231")

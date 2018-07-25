@@ -53,6 +53,8 @@ INSTALLED_APPS = [
 
     'corsheaders',
 
+    'easy_pdf',
+
     'assessment',
     'course',
     'exam',

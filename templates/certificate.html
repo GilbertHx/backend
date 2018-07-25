@@ -1,0 +1,107 @@
+{% extends "easy_pdf/base.html" %}
+
+{% load static %}
+{% block style_base %}
+    {% block layout_style %}
+        <style type="text/css">
+            @page {
+                size: {{ pagesize|default:"A4 Landscape" }};
+                margin-top: 0cm;
+                margin-left: 0cm;
+                margin-right: 0cm;
+                margin-bottom: 0cm;
+            }
+        </style>
+    {% endblock %}
+
+    {% block extra_style %}
+        <style type="text/css">
+            body {
+                font-family: "Helvetica", "sans-serif";
+                color: #333333;
+            }
+            h1 {
+                font-size: 32px;
+                margin: 0;
+                padding: 72px 0 0 0;
+                font-style: italic;
+                font-weight: 400;
+            }
+            h4 {
+                font-size: 24px;
+                color: #009dd8;
+                border-bottom: 1px dotted #009dd8;
+                margin: 0 150px 16px 150px;
+            }
+            h5{
+                font-size: 22px;
+                font-weight: 400;
+                margin: 0;
+            }
+            h6 {
+                font-size: 18px;
+                margin: 0 150px;
+                padding: 16px 0;
+            }
+            span {
+                font-size: 18px;
+            }
+            .cert-intro {
+                width: 500px;
+            }
+            .dg-name {
+                padding: 52px 0 0 0;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .text-right {
+                text-align: right;
+                padding-right: 100px;
+            }       
+
+        </style>
+    {% endblock %}
+{% endblock %}
+{% block content %}
+<table style="width:100%">
+    <tr>
+        <td style="width:18%;"><img src="/media/flag_rw.png" alt=""></td>
+        <td style="width:82%">
+            <img src="/media/topLogos.png" alt="Logo">
+            <div class="text-center">
+                <img src="/media/certificate_intro.png" alt="certificate of completion" class="cert-intro">
+                <h5>This certificate is<br />awarded to</h5>
+                <h4>{{user_first_name}} {{user_last_name}}</h4>
+                <span>Registration Number: {{reg_number}}</span>
+                <h6 class="course-area">For Participating and Completing Online CPD Program for teacher on <br />Implementation of Competence Base Curriculum</h4>
+            </div>
+            <p class="dg-name text-right">Dr. NDAYAMBAJE Irenée, Director General</p>
+        </td> 
+    </tr>
+</table>
+    <!-- <div class="row">
+        <div class="container">
+            <img class="flag-img" src="/media/flag_rw.png" alt="">
+            <div class="cnt-area">hehe</div>
+        </div>
+        <div class="col-10">
+            <div class="row logos-area">
+                <div class="col rw-log">
+                    <img class="sized-logo" src="/media/rw-logo.png" alt="">
+                </div>
+                <div class="col text-right">
+                    <img class="sized-logo" src="/media/reb.jpg" alt="">
+                </div>
+            </div>
+            <h1 class="text-center">Certificate of Participation</h1>
+            <h5 class="text-center">This Certificate is awarded to</h5>
+            <h4 class="text-center">{{customer_name}}</h4>
+            <hr class="hr-certificate top-hr"/>
+            <p class="text-center course-area">For Participating and Completing Online CPD Program for teacher on Implementation of Competence Base Curriculum</p>
+            <p class="text-right btm-hr">Dr. NDAYAMBAJE Irenée, Director General</p>
+        </div>
+    </div> -->
+{% endblock %}

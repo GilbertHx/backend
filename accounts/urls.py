@@ -20,7 +20,7 @@ urlpatterns = [
 
     url(r'^registration/$', views.MyRegistrationView.as_view(), name='rest_register'),
     url(r'^registration/verify-email/$', VerifyEmailView.as_view(), name='rest_verify_email'),
-    # url(r'^pdf/$', views.GeneratePDF.as_view()),
+    url(r'^pdf/$', views.HelloPDFView.as_view()),
     
     url(r'^certificates/$', views.CertificateListAPIView.as_view(), name='list_certificates'),
     url(r'^certificate/generate/$', views.CertificateCreateAPIView.as_view(), name='create_certificate'),
