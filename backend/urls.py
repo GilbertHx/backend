@@ -17,9 +17,12 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.generic import TemplateView
+from . import views
+
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # url(r'^admin/', admin.site.urls),
     url(r'^api/', include('accounts.urls')),
     url(r'^api/course/',include('course.urls')),
     url(r'^api/quiz/',include('quiz.urls')),
@@ -28,6 +31,7 @@ urlpatterns = [
     # url(r'^api/exam/',include('exam.urls')),
     url(r'^api/auth/', include('rest_auth.urls')),
     # url(r'^api/registration/', include('rest_auth.registration.urls')),
+    url(r'^$', TemplateView.as_view(template_name="index.html")),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # urlpatterns = [

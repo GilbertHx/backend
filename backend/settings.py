@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'course',
     'exam',
     'quiz',
-    'accounts'
+    'accounts',
+    'webpack_loader',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +129,6 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     # ],
-    
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ),
@@ -179,3 +179,16 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploaded_media')
 MEDIA_URL ='/media/'
 
+WEBPACK_LOADER = {
+    'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'bundles/',
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+        }
+}
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'assets/bundles/')
+# REACT_APP_DIR = os.path.join(BASE_DIR, 'frontend')
+
+# STATICFILES_DIRS = [
+#     os.path.join(REACT_APP_DIR, 'build', 'static'),
+# ]
