@@ -16,6 +16,8 @@ Icon
 .Spotlight-V100
 .Trashes
 
+production_settings.py
+
 # Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop
